@@ -5,14 +5,18 @@
  class SpringWorld{
   constructor(width,height){this.width=width;this.height=height;this.bodies=[];this.links=[];}
   add(id,x,y,r,mass=1){const b={id,x,y,ax:x,ay:y,r,mass,vx:0,vy:0,pin:null};this.bodies.push(b);return b;}
-  connect(a,b){this.links.push({a,b,length:Math.hypot(a.ax-b.ax,a.ay-b.ay)});}
+  connect(a,b){this.links.push({a,b,restX:b.ax-a.ax,restY:b.ay-a.ay,ai:this.bodies.indexOf(a),bi:this.bodies.indexOf(b)});}
   impulse(dx,dy){for(const b of this.bodies){if(b.pin)continue;b.vx=clamp(b.vx+dx/b.mass,-850,850);b.vy=clamp(b.vy+dy/b.mass,-850,850);}}
   reset(){for(const b of this.bodies){b.x=b.ax;b.y=b.ay;b.vx=b.vy=0;b.pin=null;}}
   step(dt){
    const count=Math.max(1,Math.ceil(Math.min(dt,.05)*120));const h=Math.min(dt,.05)/count;
    for(let n=0;n<count;n++){
-    const forces=this.bodies.map(b=>({x:23*(b.ax-b.x)-7.5*b.vx,y:23*(b.ay-b.y)-7.5*b.vy}));
-    for(const link of this.links){const {a,b,length}=link;const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy));const f=5*(d-length);const ai=this.bodies.indexOf(a),bi=this.bodies.indexOf(b);forces[ai].x+=f*dx/d;forces[ai].y+=f*dy/d;forces[bi].x-=f*dx/d;forces[bi].y-=f*dy/d;}
+    const forces=this.bodies.map(b=>({x:7*(b.ax-b.x)-7.2*b.vx,y:7*(b.ay-b.y)-7.2*b.vy}));
+    // Vector springs transmit tangential as well as radial dragging through the graph.
+    for(const {a,b,restX,restY,ai,bi} of this.links){
+     const fx=36*((b.x-a.x)-restX),fy=36*((b.y-a.y)-restY);
+     forces[ai].x+=fx;forces[ai].y+=fy;forces[bi].x-=fx;forces[bi].y-=fy;
+    }
     for(let i=0;i<this.bodies.length;i++)for(let j=i+1;j<this.bodies.length;j++){
      const a=this.bodies[i],b=this.bodies[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.max(.01,Math.hypot(dx,dy)),overlap=a.r+b.r+12-d;
      if(overlap>0){const ux=d<1?1:dx/d,uy=d<1?0:dy/d,f=overlap*110;forces[i].x-=f*ux;forces[i].y-=f*uy;forces[j].x+=f*ux;forces[j].y+=f*uy;}
