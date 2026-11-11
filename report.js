@@ -3,64 +3,116 @@
 const {sections,journals}=window.ReportData;
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const mapScreen=$('#mapScreen'), reader=$('#reader'), map=$('#map'), detail=$('#detailBody');
-const visited=new Set();let selected='overview',returnFocus=null,world=null,frame=0,previousTime=0,gesture=null,blockedUntil=0;
+const visited=new Set();let selected='overview',returnFocus=null,world=null,frame=0,previousTime=0,gesture=null,blockedUntil=0,pan={x:0,y:0},layoutSize={width:0,height:0},resizeFrame=0;
 const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');let motion=!reduce.matches;
 const satellites=[['탐구 질문','시스템 설계'],['ROI · 전처리','EMA · 추론'],['서보모터','입력 보정'],['물성 벡터','예측값 저장'],['개발 과정','팀의 기록'],['검증 범위','후속 실험']];
 const themes=sections.map(s=>`--tint:${s.tint};--accent:${s.accent}`);
-const core=`<a href="#overview" class="map-node core" data-body="core" data-topic="overview" style="--tint:#ece2ff;--accent:#ad91db" aria-label="시각에서 촉각으로, 탐구 개요 열기"><span class="node-icon">◈</span><strong class="node-title">시각 → 촉각</strong><span class="node-subtitle">로봇 그리퍼 제어</span><span class="core-label">EXPLORE THE RESEARCH</span></a>`;
-$('#nodes').innerHTML=core+sections.map((s,i)=>`<a href="#${s.id}" class="map-node topic" data-body="${s.id}" data-topic="${s.id}" style="${themes[i]}" aria-label="${s.title} 보고서 열기"><span class="node-icon" aria-hidden="true">${s.icon}</span><strong class="node-title">${s.title}</strong><span class="node-subtitle">${s.en}</span></a>`+satellites[i].map((name,j)=>`<a href="#${s.id}" class="map-node satellite" data-body="${s.id}-${j}" data-topic="${s.id}" style="${themes[i]}" aria-label="${name}: ${s.title} 열기"><span class="node-title">${name}</span></a>`).join('')).join('');
+const core=`<a draggable="false" href="#overview" class="map-node core" data-body="core" data-topic="overview" style="--tint:#ece2ff;--accent:#ad91db" aria-label="시각에서 촉각으로, 탐구 개요 열기"><span class="node-icon">◈</span><strong class="node-title">시각 → 촉각</strong><span class="node-subtitle">로봇 그리퍼 제어</span><span class="core-label">EXPLORE THE RESEARCH</span></a>`;
+$('#nodes').innerHTML=core+sections.map((s,i)=>`<a draggable="false" href="#${s.id}" class="map-node topic" data-body="${s.id}" data-topic="${s.id}" style="${themes[i]}" aria-label="${s.title} 보고서 열기"><span class="node-icon" aria-hidden="true">${s.icon}</span><strong class="node-title">${s.title}</strong><span class="node-subtitle">${s.en}</span></a>`+satellites[i].map((name,j)=>`<a draggable="false" href="#${s.id}" class="map-node satellite" data-body="${s.id}-${j}" data-topic="${s.id}" style="${themes[i]}" aria-label="${name}: ${s.title} 열기"><span class="node-title">${name}</span></a>`).join('')).join('');
 $('#contentsLinks').innerHTML=sections.map((s,i)=>`<a href="#${s.id}"><span>0${i+1}</span>${s.title}</a>`).join('');
 const nodeElements=new Map($$('.map-node').map(n=>[n.dataset.body,n]));
 let lineElements=[];
+function canvasSize(){
+ const rect=map.getBoundingClientRect();
+ return {width:rect.width||map.clientWidth||innerWidth,height:rect.height||map.clientHeight||innerHeight};
+}
 function layout(){
- const w=map.clientWidth||innerWidth,h=map.clientHeight||innerHeight;
- const mobile=w<600,short=h<520,large=w>=1100&&h>=650;
- const r=short?33:mobile?Math.min(43,w*.112):54,cr=short?43:mobile?Math.min(56,w*.145):76;
- const cx=w*(large?.54:.5),cy=h*(short?.54:.53),rx=mobile?w*.32:Math.min(w*.29,large?370:300),ry=short?h*.23:mobile?h*.255:Math.min(h*.27,265);
- const angles=mobile?[-135,-45,0,45,135,180]:[-140,-55,5,65,135,190];
- world=new SpringWorld(w,h);const root=world.add('core',cx,cy,cr,2.6);
- sections.forEach((s,i)=>{
-  const angle=angles[i]*Math.PI/180,b=world.add(s.id,cx+rx*Math.cos(angle),cy+ry*Math.sin(angle),r,1+.15*(i%3));world.connect(root,b);
-  for(let j=0;j<2;j++){const el=nodeElements.get(`${s.id}-${j}`);el.hidden=!large;
-   if(large){const a=angle+(j===0?-.14:.14),sr=27;const x=Math.max(sr+10,Math.min(w-sr-10,cx+(rx+120)*Math.cos(a))),y=Math.max(90,Math.min(h-105,cy+(ry+105)*Math.sin(a)));const c=world.add(`${s.id}-${j}`,x,y,sr,.65);world.connect(b,c);}
-  }
- });
- for(const b of world.bodies){const el=nodeElements.get(b.id);el.style.width=el.style.height=`${b.r*2}px`;}
+ finishGesture(true);stopMotion();
+ const size=canvasSize(),plan=makeMapLayout(size.width,size.height,sections.map(s=>s.id));
+ layoutSize=size;pan={x:0,y:0};map.classList.toggle('compact-map',plan.compact);
+ world=new SpringWorld(size.width,size.height);
+ const bodies=new Map();nodeElements.forEach(el=>el.hidden=true);
+ for(const n of plan.nodes){
+  const b=world.add(n.id,n.x,n.y,n.r,n.mass);bodies.set(n.id,b);
+  const el=nodeElements.get(n.id);el.hidden=false;el.style.width=el.style.height=`${n.r*2}px`;el.style.setProperty('--node-radius',`${n.r}px`);
+ }
+ for(const [a,b] of plan.links)world.connect(bodies.get(a),bodies.get(b));
  $('#connections').innerHTML=world.links.map(l=>`<line class="${l.b.id.includes('-')?'twig':''}"/>`).join('');lineElements=$$('line',$('#connections'));
  draw();wake();
 }
-function draw(){if(!world)return;for(const b of world.bodies){nodeElements.get(b.id).style.transform=`translate3d(${(b.x-b.r).toFixed(2)}px,${(b.y-b.r).toFixed(2)}px,0)`;}
- world.links.forEach((l,i)=>{const el=lineElements[i];el.setAttribute('x1',l.a.x);el.setAttribute('y1',l.a.y);el.setAttribute('x2',l.b.x);el.setAttribute('y2',l.b.y);});}
+function draw(){if(!world)return;for(const b of world.bodies){nodeElements.get(b.id).style.transform=`translate3d(${(b.x-b.r+pan.x).toFixed(2)}px,${(b.y-b.r+pan.y).toFixed(2)}px,0)`;}
+ world.links.forEach((l,i)=>{const el=lineElements[i];el.setAttribute('x1',l.a.x+pan.x);el.setAttribute('y1',l.a.y+pan.y);el.setAttribute('x2',l.b.x+pan.x);el.setAttribute('y2',l.b.y+pan.y);});}
 function wake(){if(!frame&&motion&&!mapScreen.hidden&&!document.hidden){previousTime=0;frame=requestAnimationFrame(tick);}}
 function tick(t){frame=0;if(!motion||mapScreen.hidden||document.hidden)return;world.step(previousTime?Math.min(.05,(t-previousTime)/1000):1/60);previousTime=t;draw();if(world.energy()>.02||gesture)frame=requestAnimationFrame(tick);}
 function stopMotion(){if(frame)cancelAnimationFrame(frame);frame=0;previousTime=0;}
 function updateMotion(){const b=$('#toggleMotion');b.setAttribute('aria-pressed',String(motion));b.textContent=reduce.matches?'모션 줄임':motion?'모션 켜짐':'모션 꺼짐';b.disabled=reduce.matches;}
-$('#toggleMotion').onclick=()=>{motion=!motion;updateMotion();if(!motion){stopMotion();world.reset();draw();}else wake();};
-const handleReduced=()=>{motion=!reduce.matches;updateMotion();if(!motion){stopMotion();world.reset();draw();}else wake();};
+$('#toggleMotion').onclick=()=>{finishGesture(true);motion=!motion;updateMotion();if(!motion){stopMotion();world.reset();draw();}else wake();};
+const handleReduced=()=>{finishGesture(true);motion=!reduce.matches;updateMotion();if(!motion){stopMotion();world.reset();draw();}else wake();};
 if(reduce.addEventListener)reduce.addEventListener('change',handleReduced);else if(reduce.addListener)reduce.addListener(handleReduced);
-$('#resetMap').onclick=()=>{world.reset();draw();$('#mapStatus').textContent='노드를 처음 위치로 되돌렸습니다.';wake();};
-map.addEventListener('wheel',e=>{if(e.ctrlKey||!motion)return;e.preventDefault();const unit=e.deltaMode===1?16:e.deltaMode===2?map.clientHeight:1;world.impulse(-Math.max(-150,Math.min(150,e.deltaX*unit))*1.2,-Math.max(-170,Math.min(170,e.deltaY*unit))*2.3);wake();},{passive:false});
-map.addEventListener('pointerdown',e=>{if(!motion||e.button!==0||gesture)return;const a=e.target.closest('[data-body]'),b=a?world.bodies.find(n=>n.id===a.dataset.body):null;gesture={id:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,body:b,moved:false,last:performance.now()};if(b)b.pin={x:b.x,y:b.y};});
-map.addEventListener('pointermove',e=>{
- if(!gesture||gesture.id!==e.pointerId)return;const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y;
- if(!g.moved&&Math.hypot(e.clientX-g.startX,e.clientY-g.startY)>8){g.moved=true;map.classList.add('dragging');if(map.setPointerCapture)map.setPointerCapture(e.pointerId);}
- if(g.moved){e.preventDefault();if(g.body){const b=g.body;b.pin={x:Math.max(b.r+8,Math.min(world.width-b.r-8,b.x+dx)),y:Math.max(b.r+8,Math.min(world.height-b.r-8,b.y+dy))};b.x=b.pin.x;b.y=b.pin.y;draw();}else world.impulse(dx*8,dy*8);wake();}
- g.x=e.clientX;g.y=e.clientY;g.last=performance.now();
+$('#resetMap').onclick=()=>{layout();$('#mapStatus').textContent='지도를 화면 크기에 맞추고 중앙으로 되돌렸습니다.';};
+map.addEventListener('wheel',e=>{if(e.ctrlKey||!motion)return;e.preventDefault();const unit=e.deltaMode===1?16:e.deltaMode===2?world.height:1;world.impulse(-Math.max(-150,Math.min(150,e.deltaX*unit))*1.2,-Math.max(-170,Math.min(170,e.deltaY*unit))*2.3);wake();},{passive:false});
+// Native link/image dragging must not steal desktop pointer events.
+map.addEventListener('dragstart',e=>e.preventDefault());
+map.addEventListener('selectstart',e=>e.preventDefault());
+function startPointer(e){
+ if(e.button!==0||e.isPrimary===false||gesture||mapScreen.hidden)return;
+ const a=e.target.closest('[data-body]'),body=a?world.bodies.find(n=>n.id===a.dataset.body):null;
+ const capture=a||map,pointType=e.pointerType||'mouse';blockedUntil=0;
+ gesture={id:e.pointerId,startX:e.clientX,startY:e.clientY,body,moved:false,type:pointType,capture,
+  bodyX:body?body.x:0,bodyY:body?body.y:0,panX:pan.x,panY:pan.y};
+ if(body){body.pin={x:body.x,y:body.y};a.focus({preventScroll:true});}
+ // Capture on the original link, not its parent: a stationary click still opens it.
+ if(capture.setPointerCapture&&e.pointerId!==undefined){try{capture.setPointerCapture(e.pointerId);}catch(_){/* Window listeners provide the fallback. */}}
+ if(pointType==='mouse')e.preventDefault();
+}
+function movePointer(e){
+ if(!gesture||gesture.id!==e.pointerId)return;
+ const g=gesture;
+ if(g.type==='mouse'&&e.buttons===0){finishGesture(true);return;}
+ const dx=e.clientX-g.startX,dy=e.clientY-g.startY;
+ if(!g.moved&&Math.hypot(dx,dy)>(g.type==='mouse'?4:8)){
+  g.moved=true;map.classList.add('dragging');if(g.body)g.capture.classList.add('is-dragging');
+ }
+ if(!g.moved)return;e.preventDefault();
+ if(g.body){
+  const b=g.body;b.pin={x:Math.max(b.r+8,Math.min(world.width-b.r-8,g.bodyX+dx)),y:Math.max(b.r+8,Math.min(world.height-b.r-8,g.bodyY+dy))};
+  b.x=b.pin.x;b.y=b.pin.y;b.vx=b.vy=0;
+ }else{
+  // Background dragging pans the entire map one-to-one, including all connector lines.
+  pan.x=Math.max(-world.width*.65,Math.min(world.width*.65,g.panX+dx));
+  pan.y=Math.max(-world.height*.65,Math.min(world.height*.65,g.panY+dy));
+ }
+ draw();wake();
+}
+function finishGesture(cancelled=false){
+ if(!gesture)return;const g=gesture;gesture=null;
+ if(g.body)g.body.pin=null;
+ if(g.moved||cancelled)blockedUntil=performance.now()+450;
+ g.capture.classList.remove('is-dragging');map.classList.remove('dragging');
+ if(g.capture.hasPointerCapture&&g.capture.hasPointerCapture(g.id)){try{g.capture.releasePointerCapture(g.id);}catch(_){}}
+ wake();
+}
+function endPointer(e){if(gesture&&gesture.id===e.pointerId)finishGesture(e.type==='pointercancel');}
+map.addEventListener('pointerdown',startPointer);
+window.addEventListener('pointermove',movePointer,{passive:false});
+window.addEventListener('pointerup',endPointer);window.addEventListener('pointercancel',endPointer);
+window.addEventListener('lostpointercapture',e=>{if(gesture&&e.pointerId===gesture.id&&e.target===gesture.capture)finishGesture(true);});
+window.addEventListener('blur',()=>finishGesture(true));
+// Older desktop browsers without Pointer Events still support the mouse path.
+if(!window.PointerEvent){
+ map.addEventListener('mousedown',startPointer);window.addEventListener('mousemove',movePointer,{passive:false});window.addEventListener('mouseup',endPointer);
+}
+map.addEventListener('click',e=>{
+ if(e.detail!==0&&performance.now()<blockedUntil){e.preventDefault();e.stopPropagation();return;}
+ const a=e.target.closest('a[data-topic]');if(a){e.preventDefault();navigate(a.dataset.topic,a);}
 });
-function releasePointer(e){if(!gesture||gesture.id!==e.pointerId)return;const g=gesture;if(g.body)g.body.pin=null;if(g.moved){blockedUntil=performance.now()+450;if(map.hasPointerCapture&&map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);}gesture=null;map.classList.remove('dragging');wake();}
-map.addEventListener('pointerup',releasePointer);map.addEventListener('pointercancel',releasePointer);map.addEventListener('lostpointercapture',e=>{if(e.target===map)releasePointer(e);});
-// A drag never becomes a navigation click. A tap and a keyboard activation always can.
-map.addEventListener('click',e=>{if(e.detail!==0&&performance.now()<blockedUntil){e.preventDefault();e.stopPropagation();}else{const a=e.target.closest('a[data-topic]');if(a){e.preventDefault();navigate(a.dataset.topic,a);}}});
-window.addEventListener('resize',()=>{gesture=null;layout();});document.addEventListener('visibilitychange',()=>document.hidden?stopMotion():wake());
+function scheduleLayout(){
+ if(mapScreen.hidden)return;
+ if(!resizeFrame)resizeFrame=requestAnimationFrame(()=>{resizeFrame=0;if(mapScreen.hidden)return;const size=canvasSize();if(Math.abs(size.width-layoutSize.width)>.5||Math.abs(size.height-layoutSize.height)>.5)layout();});
+}
+window.addEventListener('resize',scheduleLayout);
+if(window.ResizeObserver)new ResizeObserver(scheduleLayout).observe(map);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',scheduleLayout);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){finishGesture(true);stopMotion();}else wake();});
 $('#openContents').onclick=()=>{const open=$('#contents').hidden;$('#contents').hidden=!open;$('#openContents').setAttribute('aria-expanded',String(open));};
 function closeContents(){$('#contents').hidden=true;$('#openContents').setAttribute('aria-expanded','false');}
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(a&&!a.closest('#map')&&!e.defaultPrevented){e.preventDefault();navigate(a.getAttribute('href').slice(1),a);}});
 function navigate(id,trigger){if(trigger&&!mapScreen.hidden)returnFocus=trigger;const target=id==='sources'?'validation':id;if(location.hash!==`#${target}`)history.pushState({topic:target},'',`#${target}`);showRoute(target);}
 function showRoute(id){closeContents();if(id==='map'||!id){showMap();return;}if(id==='all'){showReader('all');return;}if(!sections.some(s=>s.id===id)){showMap();return;}showReader(id);}
-function showMap(){reader.hidden=true;mapScreen.hidden=false;mapScreen.inert=false;reader.inert=true;const target=returnFocus&&returnFocus.isConnected?returnFocus:nodeElements.get(selected)||nodeElements.get('core');if(target)target.focus({preventScroll:true});wake();}
+function showMap(){reader.hidden=true;mapScreen.hidden=false;mapScreen.inert=false;reader.inert=true;scheduleLayout();const target=returnFocus&&returnFocus.isConnected?returnFocus:nodeElements.get(selected)||nodeElements.get('core');if(target)target.focus({preventScroll:true});wake();}
 function closeArticle(){history.replaceState(null,'','#map');showMap();}
 function showReader(id){
- stopMotion();if(gesture){if(gesture.body)gesture.body.pin=null;gesture=null;}map.classList.remove('dragging');
+ finishGesture(true);stopMotion();
  selected=id;mapScreen.hidden=true;mapScreen.inert=true;reader.hidden=false;reader.inert=false;
  if(id==='all')renderAll();else{
   const s=sections.find(s=>s.id===id),i=sections.indexOf(s);visited.add(id);

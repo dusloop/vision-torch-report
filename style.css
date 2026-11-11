@@ -3,3 +3,41 @@
 @media(max-width:380px){.map-instruction small{display:none}.map-instruction span:last-child{font-size:0}.map-instruction span:last-child:after{content:'스크롤 · 드래그 · 클릭';font-size:8px}}
 .visual svg .axis-label{font-size:13px}.visual svg.radar .axis-label{font-size:12px}
 @media(max-width:600px){.visual svg:not(.radar) .axis-label{font-size:20px}}
+/* Desktop pointer controls and viewport-fitted stage. */
+#mapScreen{--stage-top:146px;--stage-bottom:100px;--stage-side:28px;background-image:radial-gradient(#ddd5e6 .8px,transparent .8px),radial-gradient(ellipse at 54% 46%,#f1ebffb0,transparent 58%);background-size:25px 25px,100% 100%}
+.map-canvas{inset:calc(var(--stage-top) + env(safe-area-inset-top,0px)) var(--stage-side) calc(var(--stage-bottom) + env(safe-area-inset-bottom,0px));background:none;min-width:0;min-height:0}
+.map-intro{top:100px;left:34px;max-width:calc(100% - 180px)}
+.map-intro .eyebrow,.map-intro>p:last-child{display:none}
+.map-intro h1{font-size:24px;letter-spacing:-1px;line-height:1.3}.map-intro h1 br{display:none}.map-intro h1 em{margin-left:6px}
+.map-counter{top:108px}.map-orbits{width:min(67%,650px);height:min(75%,650px);aspect-ratio:auto;left:50%;top:50%}
+.map-node{cursor:grab;-webkit-user-drag:none;user-select:none;-webkit-user-select:none;transition:box-shadow .2s,border-color .2s}
+.map-node *{pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+.map-canvas.dragging,.map-canvas.dragging .map-node,.map-node.is-dragging{cursor:grabbing}
+.map-node.is-dragging{z-index:6;box-shadow:0 0 0 7px #c6b0e942,0 20px 45px #65507824;border-color:#ac8ed3}
+.map-node .node-title{font-size:clamp(10px,calc(var(--node-radius)*.25),17px);white-space:normal;max-width:100%;overflow-wrap:anywhere;line-height:1.4}
+.map-node .node-subtitle{font-size:clamp(7px,calc(var(--node-radius)*.15),10px);letter-spacing:0;max-width:100%}
+.map-node .node-icon{font-size:clamp(18px,calc(var(--node-radius)*.5),35px);margin-bottom:5px}
+.map-node.core .node-title{font-size:clamp(14px,calc(var(--node-radius)*.29),27px)}
+.map-node.core .node-subtitle{font-size:clamp(8px,calc(var(--node-radius)*.13),12px)}
+.map-node.core .node-icon{font-size:clamp(24px,calc(var(--node-radius)*.49),45px)}
+.map-node.core .core-label{font-size:clamp(5px,calc(var(--node-radius)*.085),8px);letter-spacing:1px;margin-top:8px}
+.map-node.satellite .node-title{font-size:clamp(9px,calc(var(--node-radius)*.39),12px);font-weight:450}
+.map-node.satellite{padding:6px}
+.compact-map .map-node{padding:5px}.compact-map .node-icon,.compact-map .node-subtitle,.compact-map .core-label{display:none}
+.compact-map .map-node .node-title{font-size:10px;line-height:1.4}.compact-map .core .node-title{font-size:12px}
+.map-footer{position:absolute;left:28px;right:28px;bottom:calc(20px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:center;z-index:5;pointer-events:none}
+.map-controls{position:static;justify-self:start;pointer-events:auto;gap:7px}
+.map-controls button{font-size:11px;padding:10px 12px;min-height:38px;white-space:nowrap}
+.map-instruction{position:static;transform:none;justify-self:center;padding:9px 15px;white-space:normal;font-size:10px;line-height:1.7;text-align:left;max-width:380px;gap:10px}
+.map-instruction small{font-size:9px;margin-top:2px}
+.map-instruction span:not(.instruction-icon){font-size:inherit}
+.map-instruction span:last-child:after{content:none}
+.touch-help{display:none}
+.map-credit{position:static;justify-self:end;font-size:10px;white-space:nowrap}.map-credit span{font-size:7px}
+.contents{max-height:calc(100dvh - 105px);overflow-y:auto;overscroll-behavior:contain}
+@media(hover:none) and (pointer:coarse){.desktop-help{display:none}.touch-help{display:inline}}
+@media(min-width:1800px) and (min-height:1000px){#mapScreen{--stage-top:160px;--stage-bottom:115px;--stage-side:48px}.map-header{padding:32px 48px}.brand{font-size:20px}.brand small{font-size:9px}.map-intro{left:48px;top:111px}.map-intro h1{font-size:29px}.map-counter{right:48px;top:122px;font-size:12px}.map-footer{left:48px;right:48px;bottom:30px}.map-controls button{font-size:12px;padding:13px 16px}.map-instruction{font-size:12px;max-width:440px;padding:12px 20px}.map-instruction small{font-size:11px}.map-credit{font-size:12px}}
+@media(max-width:1100px){.map-footer{grid-template-columns:auto 1fr;gap:18px}.map-credit{display:none}.map-instruction{justify-self:end}.map-controls button{font-size:10px}}
+@media(max-width:720px){#mapScreen{--stage-top:126px;--stage-bottom:125px;--stage-side:14px}.map-header{padding:20px}.brand{font-size:13px}.brand small{font-size:6px}.brand-mark{font-size:30px}.map-intro{left:21px;top:85px;max-width:calc(100% - 110px)}.map-intro h1{font-size:19px}.map-counter{top:91px;right:20px;font-size:8px}.map-footer{left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom,0px));grid-template-columns:1fr;gap:8px}.map-controls,.map-instruction{justify-self:center}.map-controls button{font-size:10px;min-height:34px;padding:7px 10px}.map-controls #resetMap span{display:inline}.map-instruction{max-width:100%;padding:7px 12px;font-size:9px;text-align:center;gap:7px}.map-instruction small{font-size:8px;display:block}.map-instruction .instruction-icon{font-size:18px}.contents{right:16px;top:69px;max-height:calc(100dvh - 95px)}.node-subtitle{line-height:1.35}}
+@media(max-height:560px){#mapScreen{--stage-top:74px;--stage-bottom:76px;--stage-side:18px}.map-header{padding:13px 20px}.brand{font-size:13px}.brand-mark{font-size:29px}.brand small{font-size:6px}.map-intro,.map-counter{display:none}.map-footer{left:16px;right:16px;bottom:calc(12px + env(safe-area-inset-bottom,0px));grid-template-columns:auto 1fr;gap:12px}.map-controls button{font-size:9px;min-height:32px;padding:7px 9px}.map-instruction{justify-self:end;max-width:360px;font-size:9px;padding:6px 10px}.map-instruction small{font-size:8px}.map-node .node-subtitle,.map-node.core .core-label{display:none}.map-node .node-icon{font-size:20px;margin-bottom:3px}.contents{top:62px;max-height:calc(100dvh - 82px)}.map-credit{display:none}}
+@media(max-width:480px) and (max-height:560px){#mapScreen{--stage-top:68px;--stage-bottom:68px;--stage-side:10px}.map-controls #resetMap span{display:none}.map-instruction .desktop-help,.map-instruction .touch-help{display:none}.map-instruction small{max-width:140px;font-size:8px;line-height:1.6;margin:0}.map-instruction .instruction-icon{display:none}.map-instruction{padding:6px 8px}}

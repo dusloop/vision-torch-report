@@ -4,8 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8f7fc">
 <meta name="description" content="이미지 기반 촉각 물성 예측과 로봇 그리퍼 제어. 움직이는 탐구 지도와 인터랙티브 연구 보고서.">
 <title>Vision → Touch | 시각에서 촉각으로</title>
-<link rel="stylesheet" href="./style.css?v=20261111-3">
-<script defer src="./content.js?v=20261111-3"></script><script defer src="./physics.js?v=20261111-3"></script><script defer src="./report.js?v=20261111-3"></script>
+<link rel="stylesheet" href="./style.css?v=20261111-4">
+<script defer src="./content.js?v=20261111-4"></script><script defer src="./physics.js?v=20261111-4"></script><script defer src="./layout.js?v=20261111-4"></script><script defer src="./report.js?v=20261111-4"></script>
 </head>
 <body>
 <main id="mapScreen" aria-label="전체 화면 탐구 지도">
@@ -17,10 +17,10 @@
 <div class="map-intro"><p class="eyebrow">ROBOTICS × DEEP LEARNING</p><h1>보는 것에서,<br><em>느끼는 것으로.</em></h1><p>시각 기반 촉각 예측을 통한 로봇 그리퍼 제어</p></div>
 <aside id="contents" class="contents" aria-label="보고서 목차" hidden><h2>탐구 바로가기</h2><nav id="contentsLinks"></nav><button id="readAll">전체 보고서 읽기 ↗</button></aside>
 <div class="map-counter"><span class="status-dot"></span><span id="readCount">0 / 6 탐구</span></div>
-<div class="map-controls"><button id="resetMap" title="노드를 원래 위치로">↺ <span>위치 초기화</span></button><button id="toggleMotion" aria-pressed="true">모션 켜짐</button></div>
-<div class="map-instruction"><span class="instruction-icon">↕</span><span>스크롤로 흔들고, 드래그로 당기세요<small>노드를 누르면 탐구 내용이 열립니다</small></span></div>
+<footer class="map-footer"><div class="map-controls"><button id="resetMap" title="지도 위치와 배치를 화면 크기에 맞추기">↺ <span>화면에 맞추기</span></button><button id="toggleMotion" aria-pressed="true">모션 켜짐</button></div>
+<div class="map-instruction"><span class="instruction-icon">↕</span><span><span class="desktop-help">마우스 왼쪽 버튼으로 잡고 움직이세요</span><span class="touch-help">손가락으로 잡고 움직이세요</span><small>빈 곳: 지도 이동 · 노드: 당기기 / 클릭해서 읽기</small></span></div>
 <div class="map-credit">정연준 · 강준혁 · 권준현<span>VISION → PREDICTION → ACTION</span></div>
-<div id="mapStatus" class="sr-only" role="status"></div>
+</footer><div id="mapStatus" class="sr-only" role="status"></div>
 </main>
 <section id="reader" class="reader-screen" aria-labelledby="readerTitle" hidden>
 <header class="reader-bar"><a class="reader-home" href="#map" aria-label="마인드맵으로 돌아가기">◈ <span>탐구 지도</span></a><div class="reader-heading"><small>시각에서 촉각으로</small><span id="readerTitle"></span></div><button id="closeReader" class="close-button" aria-label="본문 닫고 마인드맵으로 돌아가기" title="닫기 (Esc)">×</button></header>

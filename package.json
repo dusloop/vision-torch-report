@@ -1,11 +1,11 @@
 {
   "name": "vision-touch-report",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Static research atlas; jsdom is only used for development tests.",
   "scripts": {
-    "test": "node tests/physics.test.cjs && node tests/ui.test.cjs",
-    "check": "node --check report.js && node --check physics.js && node --check content.js && python3 check_site.py"
+    "test": "node tests/physics.test.cjs && node tests/layout.test.cjs && node tests/ui.test.cjs",
+    "check": "node --check report.js && node --check physics.js && node --check layout.js && node --check content.js && python3 check_site.py"
   },
   "devDependencies": {"jsdom": "26.1.0"}
 }
