@@ -1,20 +1,31 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f4fa"><meta name="description" content="시각 기반 촉각 물성 예측과 로봇 그리퍼 제어. 정연준·강준혁·권준현의 2학기 탐구 기록을 바탕으로 한 인터랙티브 연구 보고서."><title>Vision → Touch | 시각에서 촉각으로</title><link rel="stylesheet" href="./style.css"><script defer src="./report.js"></script></head>
-<body><a class="skip" href="#map">탐구 지도로 건너뛰기</a>
-<header><a href="#map" class="brand" aria-label="Vision Touch 처음으로"><span class="brand-icon">◈</span> VISION<span class="brand-arrow">→</span>TOUCH <small>RESEARCH LAB</small></a><nav aria-label="주요 메뉴"><a href="#map" class="nav-active">탐구 지도</a><button id="readAll">전체 보고서</button><button id="print">PDF / 인쇄 ↗</button></nav><span class="edition">2026 · 2학기 진로 프로젝트</span></header>
-<main>
-<section class="intro"><div><p class="eyebrow"><span class="live-dot"></span> ROBOTICS × DEEP LEARNING</p><h1>보는 것에서,<br><span>느끼는 것으로.</span></h1><p class="subtitle">딥러닝 기반 이미지의 촉각 물성 예측을 통한<br class="desktop"> 로봇 그리퍼 제어 탐구</p></div><div class="intro-right"><p>물체를 만지기 전에,<br>어떻게 잡을지 알 수 있을까?</p><div class="team"><span>정연준</span><span>강준혁</span><span>권준현</span></div><p class="caption">로보로보 · PyTorch · 컴퓨터 비전</p></div></section>
-<div class="workspace-head"><div><span class="section-number">01 / EXPLORE</span><h2>우리의 탐구를 연결하다</h2></div><div class="segmented" aria-label="탐색 표시 방식"><button id="mapView" aria-pressed="true">◉ 탐구 지도</button><button id="listView" aria-pressed="false">☷ 목록 보기</button></div></div>
-<section class="workspace" aria-label="인터랙티브 탐구 보고서"><div class="map-shell"><div class="map-top"><span><i></i> 6개의 탐구 카테고리</span><span id="readCount">0 / 6 열람</span></div><div class="map" id="map"><svg class="connections" viewBox="0 0 800 650" preserveAspectRatio="none" aria-hidden="true"><path d="M400 320 L170 160 M400 320 L610 140 M400 320 L665 340 M400 320 L580 530 M400 320 L230 530 M400 320 L130 350"/><circle cx="400" cy="320" r="200"/><circle cx="400" cy="320" r="265"/></svg><div class="orbit-caption">VISION-BASED TACTILE PREDICTION</div><button class="core" data-section="overview"><span class="core-icon">◈</span><strong>시각 → 촉각</strong><small>로봇 그리퍼 제어</small><span class="core-pill">PROJECT 02</span></button><div id="nodes"></div><div class="map-note">노드를 눌러 탐구 내용을 살펴보세요 <span>↗</span></div></div><div class="map-legend"><span><i class="purple"></i> 설계와 구현</span><span><i class="green"></i> 활동 기록</span><span><i class="orange"></i> 검증과 한계</span></div></div>
-</section>
-<section class="bottom-strip"><div><span>INPUT</span><strong>카메라 영상</strong><small>관심 영역 · 이미지 전처리</small></div><b>→</b><div><span>PREDICTION</span><strong>3가지 촉각 물성</strong><small>거칠기 · 경도 · 마찰</small></div><b>→</b><div><span>ACTION</span><strong>두 서보의 파지 동작</strong><small>예측값 저장 · 각도와 속도 제어</small></div><a href="#demo">동작 원리 체험 ↗</a></section>
-<section id="fullReport" hidden><div class="workspace-head"><div><span class="section-number">02 / FULL REPORT</span><h2>탐구 보고서 전체 읽기</h2></div><button id="closeReport">접기 ↑</button></div><div id="fullContent"></div></section>
-<footer><div><strong>VISION → TOUCH</strong><p>시각 정보와 물리적 동작 사이를 탐구합니다.</p></div><p>활동 기록 기반 · 2026.11.11 확인<br><a href="#sources">자료 출처와 구현 범위 ↗</a></p></footer>
-</main><dialog id="reader" aria-labelledby="readerTitle">
-<div class="reader-bar"><span class="reader-brand">VISION → TOUCH</span><div class="reader-heading"><small>시각 기반 촉각 예측과 로봇 그리퍼 제어</small><span id="readerTitle"></span></div><button id="closeReader" aria-label="본문 닫고 마인드맵으로 돌아가기" title="닫기 (Esc)">×</button></div>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8f7fc">
+<meta name="description" content="이미지 기반 촉각 물성 예측과 로봇 그리퍼 제어. 움직이는 탐구 지도와 인터랙티브 연구 보고서.">
+<title>Vision → Touch | 시각에서 촉각으로</title>
+<link rel="stylesheet" href="./style.css?v=20261111-3">
+<script defer src="./content.js?v=20261111-3"></script><script defer src="./physics.js?v=20261111-3"></script><script defer src="./report.js?v=20261111-3"></script>
+</head>
+<body>
+<main id="mapScreen" aria-label="전체 화면 탐구 지도">
+<div id="map" class="map-canvas" aria-label="노드를 눌러 보고서를 읽고, 스크롤하거나 드래그하여 움직여 보세요">
+<div class="map-orbits" aria-hidden="true"></div><svg id="connections" class="connections" aria-hidden="true"></svg>
+<div id="nodes"></div>
+</div>
+<header class="map-header"><a class="brand" href="#map"><span class="brand-mark">◈</span><span>VISION <i>→</i> TOUCH<small>INTERACTIVE RESEARCH ATLAS</small></span></a><div class="header-tools"><span class="semester">2026 · 2학기 진로 프로젝트</span><button id="openContents" class="icon-button" aria-expanded="false" aria-controls="contents">☰ <span>목차</span></button></div></header>
+<div class="map-intro"><p class="eyebrow">ROBOTICS × DEEP LEARNING</p><h1>보는 것에서,<br><em>느끼는 것으로.</em></h1><p>시각 기반 촉각 예측을 통한 로봇 그리퍼 제어</p></div>
+<aside id="contents" class="contents" aria-label="보고서 목차" hidden><h2>탐구 바로가기</h2><nav id="contentsLinks"></nav><button id="readAll">전체 보고서 읽기 ↗</button></aside>
+<div class="map-counter"><span class="status-dot"></span><span id="readCount">0 / 6 탐구</span></div>
+<div class="map-controls"><button id="resetMap" title="노드를 원래 위치로">↺ <span>위치 초기화</span></button><button id="toggleMotion" aria-pressed="true">모션 켜짐</button></div>
+<div class="map-instruction"><span class="instruction-icon">↕</span><span>스크롤로 흔들고, 드래그로 당기세요<small>노드를 누르면 탐구 내용이 열립니다</small></span></div>
+<div class="map-credit">정연준 · 강준혁 · 권준현<span>VISION → PREDICTION → ACTION</span></div>
+<div id="mapStatus" class="sr-only" role="status"></div>
+</main>
+<section id="reader" class="reader-screen" aria-labelledby="readerTitle" hidden>
+<header class="reader-bar"><a class="reader-home" href="#map" aria-label="마인드맵으로 돌아가기">◈ <span>탐구 지도</span></a><div class="reader-heading"><small>시각에서 촉각으로</small><span id="readerTitle"></span></div><button id="closeReader" class="close-button" aria-label="본문 닫고 마인드맵으로 돌아가기" title="닫기 (Esc)">×</button></header>
 <div class="reader-progress" aria-hidden="true"><span id="readerProgress"></span></div>
-<article id="detail" class="detail" tabindex="-1" aria-label="선택한 탐구 내용"><div id="detailBody"></div><div class="detail-footer"><span id="pageNumber"></span><button id="next">다음 탐구 →</button></div></article>
-</dialog>
-<noscript><p>탐구 지도에는 JavaScript가 필요합니다. 저장소의 README.md에서 연구 요약을 읽을 수 있습니다.</p></noscript>
+<article id="detail" class="detail" tabindex="-1"><div id="detailBody"></div><footer class="reader-footer"><button id="previous">← 이전 탐구</button><span id="pageNumber"></span><button id="next">다음 탐구 →</button></footer></article>
+</section>
+<noscript><div class="no-script">이 인터랙티브 보고서에는 JavaScript가 필요합니다. <a href="https://github.com/dusloop/vision-torch-report#readme">보고서 요약 읽기</a></div></noscript>
 </body></html>

@@ -1,66 +1,137 @@
+(function(){
 'use strict';
-const sheetURL='https://docs.google.com/spreadsheets/d/1lrLXjXqZK7DK3e-dUuap6zjmhxhJdHIiu68cVr3lSZ8/edit#gid=1549448282';
-const row=(icon,title,text)=>`<section class="prose-section"><h4>${title}</h4><p>${text}</p></section>`;
-const note=text=>`<p class="source-note">근거 · ${text}</p>`;
-const box=(title,text)=>`<section class="prose-section"><h4>${title}</h4><p>${text}</p></section>`;
-const sections=[
-{id:'overview',title:'탐구 개요',en:'Research question',icon:'◎',x:21.25,y:24.62,tint:'#e2d9fa',accent:'#9875cf',tag:'01 · RESEARCH QUESTION',heading:'보는 정보로<br>잡는 동작을 바꾸다',html:`<p class="lead">사람은 물체의 겉모습을 보고 단단함과 미끄러움을 예상합니다. 우리는 이 과정을 이미지 기반 물성 예측과 로봇 그리퍼의 동작으로 연결하고자 했습니다.</p>${box('핵심 탐구 질문','이미지에서 예측한 거칠기·경도·마찰 정보를 로봇의 파지 동작에 어떻게 활용할 수 있을까?')}${row('01','시각에서 물성으로','카메라 영상과 PyTorch 모델을 연결해 촉각 물성 3성분을 예측합니다.')}${row('02','예측에서 동작으로','예측값과 두 서보의 닫힘 각도·이동 속도를 연결하는 실험용 제어 규칙을 탐구했습니다.')}${row('03','구현과 검증을 구분하기','최신 기록에는 예측값 저장과 고정 각도 제어가 명시되어 있습니다. 실제 파지력의 정량 검증은 후속 과제입니다.')}${note('2학기활동내용 D5:H6, D8:H8. 초기 물품 분류 구상에서 시각 기반 촉각 물성 예측으로 탐구를 구체화했습니다.')}`},
-{id:'vision',title:'시각·촉각 예측',en:'Vision & inference',icon:'◉',x:76.25,y:21.54,tint:'#dceafc',accent:'#7296ce',tag:'02 · VISION & INFERENCE',heading:'하나의 영상,<br>세 가지 물성 예측',html:`<p class="lead">웹캠 영상의 관심 영역(ROI)을 모델에 입력하고 거칠기·경도·마찰을 출력했습니다. 실제 촉각 센서의 측정값이 아니라 이미지에서 추정한 값입니다.</p>${row('↳','전처리와 모델','권준현의 9월 23일 기록에는 224 × 224 전처리와 기존 학습 가중치 사용이, 정연준의 10월 14일 기록에는 FCN-ResNet50 기반 추론이 적혀 있습니다.')}${row('±','출력 정규화','세 특성을 −1~1 범위로 변환하는 코드를 구현했습니다. 정규화된 마찰 출력은 물리적인 마찰계수 μ와 동일하지 않습니다.')}${row('⟳','실시간 처리 개선','영상 캡처와 추론 스레드를 분리하고 Lock으로 공유 데이터를 관리했습니다. 추론 주기 설정은 0.4초이며, 지수이동평균(EMA)으로 변동을 완화하고자 했습니다.')}${box('관측하고 조정한 항목','ROI 가로 40% · 세로 50%, FPS, 추론 시간, 예측값 경과 시간을 표시했습니다. 0.4초는 설정값이며 측정된 처리 성능을 의미하지 않습니다.')}${note('F5:G5, F8. 모델 원본·학습 데이터·가중치·평가 결과는 현재 확인하지 못했습니다. 기록만으로 예측 정확도를 주장하지 않습니다.')}`},
-{id:'control',title:'그리퍼 제어',en:'Gripper control',icon:'⋈',x:83.125,y:52.31,tint:'#d9f0e9',accent:'#6cae99',tag:'03 · GRIPPER CONTROL',heading:'두 개의 서보,<br>하나의 파지 동작',html:`<p class="lead">로보로보 CPU 보드와 두 서보모터를 이용해 양쪽 손가락이 움직이는 그리퍼를 제작했습니다. 열림·닫힘 각도와 이동 속도를 조절하며 기본 파지 동작을 구현했습니다.</p>${row('A0','버튼 입력 보정','아날로그 입력의 원시값을 측정하고 흰색·빨간색 버튼의 인식 범위를 조정했습니다. 실제 임계값은 원본 코드 확인이 필요합니다.')}${row('↔','개별 모터 시험','회전 방향과 목표 각도를 별도로 점검했습니다. 두 서보에 공통 진행률과 가감속 궤적을 적용했다는 기록이 있습니다.')}${row('▣','예측값 스냅샷','잡기 버튼을 누른 시점의 최신 예측값을 저장해, 이후 예측값이 변해도 진행 중인 동작이 바뀌지 않도록 개선했습니다.')}${box('기록 간 차이를 그대로 남겼습니다','정연준은 물성에 따른 목표 위치 조절과 작동 성공을 기록했습니다. 권준현은 실험적 근거가 부족해 최종 구현을 예측값 저장·고정 각도 제어로 구분했습니다. 통합 코드 확인 전에는 이를 정량적 힘 제어 성공으로 해석하지 않습니다.')}${note('H5, H6, F8:H8. 노트북별 각도 차이는 활동자가 보고한 문제 현상이며 일반적인 서보 특성으로 단정하지 않습니다.')}`},
-{id:'demo',title:'동작 원리 체험',en:'Interactive demo',icon:'▷',x:72.5,y:81.54,tint:'#e7dafa',accent:'#a07cc9',tag:'04 · INTERACTIVE DEMO',heading:'예측값을 저장하고,<br>동작을 이어가다',html:`<p class="lead">입력값을 바꾼 뒤 ‘잡기’를 눌러보세요. 잡기 이후 입력을 다시 바꾸어도 저장된 값은 유지됩니다.</p><span class="tag">설명용 모형 · 실제 AI 추론/로봇 연결 아님</span><div id="demoControls"></div><div class="demo-scene" id="demoScene" role="img" aria-label="열린 그리퍼의 설명용 모형"><div class="gripper-bar"></div><div class="finger left"></div><div class="finger right"></div><div class="object"></div></div><div class="demo-buttons"><button id="grasp">잡기 · 현재 값 저장</button><button id="release">열기 / 초기화</button></div><div class="demo-state" id="demoState" role="status">입력 대기 · 아직 저장된 예측값이 없습니다.</div>${box('왜 값이 달라도 닫힘 위치는 같을까요?','이 모형은 최신 기록의 ‘예측값 저장과 고정 각도 제어’를 표현합니다. 물성에 따른 힘 변환식을 임의로 만들지 않았습니다. 모션은 웹 설명용이며 실제 로봇 궤적을 재현한 것이 아닙니다.')}`},
-{id:'activity',title:'활동 타임라인',en:'Research journal',icon:'⌁',x:28.75,y:81.54,tint:'#e5efcc',accent:'#92aa61',tag:'05 · RESEARCH JOURNAL',heading:'작은 시행착오를<br>하나의 시스템으로',html:`<p class="lead">세 사람이 작성한 2학기 활동 내용을 날짜별로 정리했습니다. 작성자별 기록의 상세도와 확인 범위는 다릅니다.</p><div class="mini-tabs" id="people" aria-label="활동 기록 작성자"></div><div id="journal" class="timeline"></div>${note('2학기활동내용 D5:H5(정연준), D6:H6(강준혁), D8:H8(권준현). I열 이후는 확인 시점에 해당 학생의 추가 활동 내용이 없었습니다.')}`},
-{id:'validation',title:'결과·한계·출처',en:'Evidence & next steps',icon:'◇',x:16.25,y:53.85,tint:'#fae6cc',accent:'#cf9e59',tag:'06 · EVIDENCE & NEXT STEPS',heading:'움직였다는 것과<br>검증했다는 것 사이',html:`<p class="lead">구현 성과는 영상 추론과 그리퍼 동작을 연결한 경험입니다. 실제 파지력과 예측 성능을 수치로 입증하는 실험은 별도로 필요합니다.</p><table><thead><tr><th>구분</th><th>기록에서 확인한 범위</th></tr></thead><tbody><tr><td>구현</td><td>물성 출력, 서보 동작, 버튼 보정, 예측값 저장</td></tr><tr><td>미확인</td><td>정확도, 힘(N), 파지 성공률, 재질별 반복 실험</td></tr><tr><td>후속 제안</td><td>힘 센서 측정, 반복 실험, 고정 각도와 비교</td></tr></tbody></table>${box('후속 실험 설계 제안','같은 물체와 자세에서 고정 각도 방식과 예측 기반 방식을 비교합니다. 물체 질량·표면 상태·조명을 기록하고, 실제 힘·미끄러짐·손상 여부를 측정해야 합니다. 데이터 분할과 보지 못한 물체에 대한 평가도 필요합니다.') }<h4>출처와 자료 범위</h4><ul class="source-list"><li><a href="${sheetURL}" target="_blank" rel="noopener">2026_로봇소리 · 2학기활동내용 ↗</a><br>D5:H6, D8:H8 · 2026.11.11 확인</li><li>사용자가 제공한 Dreamhack 화면: 노드형 카테고리 탐색 참고.</li><li><a href="https://nerfies.github.io/" target="_blank" rel="noopener">Nerfies 연구 프로젝트 사이트 ↗</a>: 연구 설명과 인터랙티브 데모의 결합 참고. 디자인·코드는 새로 작성했습니다.</li><li>‘재질에 따른 파지력 조절’ 공유 채팅은 링크를 받았으나 본문을 읽지 못했습니다. 현재 보고서는 해당 대화·원본 코드를 검토한 결과가 아닙니다.</li></ul>`}
-];
-const journals={
-'정연준':[['08.19','편의점 로봇 사례를 바탕으로 이미지 인식·분류 프로젝트를 구상하고 Python·AI 학습 목표를 설정했습니다.'],['09.09','Jupyter Notebook 이미지 학습을 수행했습니다. Python 의존성과 import 구조를 분석해 RobokitRS의 pkg_resources 오류를 해결하고 검증했습니다.'],['09.23','Pillow 설치로 실행 오류를 해결하고 웹캠으로 거칠기·경도·마찰을 예측했습니다. 출력값을 −1~1로 변환했습니다.'],['10.14','영상 캡처·추론 스레드를 분리하고 0.4초 추론 주기, EMA, ROI 축소 및 지연 지표 표시를 적용했습니다.'],['10.28','RobokitRS와 버튼 입력을 연동했습니다. 경도·마찰 기반 목표 위치 조절과 개별 모터 각도 시험을 통해 동작을 개선했다고 기록했습니다.']],
-'강준혁':[['08.19','이미지 분류와 로봇 이동, 3D 설계 경험을 활용하는 하드웨어 제작 계획을 세웠습니다.'],['09.09','이미지 학습과 라이브러리 구조를 익히고 팀원과 버전·의존성 오류를 분석했습니다.'],['09.23 / 10.14','해당 셀은 짧은 미완성 문구로, 구체적인 활동 내용을 확인할 수 없습니다.'],['10.28','하드웨어를 제작하고 구조를 함께 설계했습니다. 프로그램별 서보 동작 방향 차이를 경험하고 팀원과 오류를 해결했습니다.']],
-'권준현':[['08.19','겉모습에서 물성을 예상하는 사람의 파지 방식에 착안해 카메라→AI→모터의 구조를 구상했습니다.'],['09.09','Python·Jupyter 환경을 구성하고 이미지 학습 흐름 및 라이브러리 내부 구조를 분석했습니다.'],['09.23','두 서보 그리퍼를 제작했습니다. 224×224 전처리, 기존 가중치와 3성분 회귀 출력을 점검했습니다.'],['10.14','물성 벡터와 각도·속도를 연결하는 실험용 규칙 및 키패드 동작을 구현했습니다. 위치·속도 제어가 실제 힘 제어와 다름을 확인했습니다.'],['10.28','영상 재연결, 버튼 보정, 예측값 저장, 두 서보의 공통 진행률·가감속을 적용했습니다. 예측값 저장과 고정 각도 제어를 구분해 표시했습니다.']]
-};
-const nodes=document.querySelector('#nodes'), detail=document.querySelector('#detailBody');
-let selected='overview';const visited=new Set();
-nodes.innerHTML=sections.map(s=>`<button class="node" data-section="${s.id}" style="left:${s.x}%;top:${s.y}%;--tint:${s.tint};--accent:${s.accent}" aria-current="false"><span class="node-bubble" aria-hidden="true">${s.icon}</span><strong>${s.title}</strong><small>${s.en}</small></button>`).join('');
-const reader=document.querySelector('#reader');
-let returnFocus=null;
-function render(id,focus=true){
- const s=sections.find(x=>x.id===id);if(!s)return;
- if(!reader.open){returnFocus=document.activeElement;reader.showModal();document.body.classList.add('reading');}
- selected=s.id;visited.add(s.id);
- detail.innerHTML=`<h2 class="reader-category">${s.title}</h2><h3>${s.heading.replace(/<br>/g,' ')}</h3>${s.html}`;
- detail.style.animation='none';void detail.offsetHeight;detail.style.animation='';
- document.querySelectorAll('.node').forEach(n=>n.setAttribute('aria-current',String(n.dataset.section===s.id)));
- document.querySelector('#readCount').textContent=`${visited.size} / 6 열람`;
- const i=sections.indexOf(s);
- document.querySelector('#readerTitle').textContent=s.title;
- document.querySelector('#readerProgress').style.width=`${(i+1)/sections.length*100}%`;
- document.querySelector('#pageNumber').textContent=`0${i+1} / 06`;
- document.querySelector('#next').textContent=i===5?'마인드맵으로 돌아가기 →':'다음 탐구 →';
- if(s.id==='activity')setupJournal();if(s.id==='demo')setupDemo();
- reader.scrollTo({top:0,behavior:'instant'});
- if(focus)document.querySelector('#detail').focus({preventScroll:true});
+const {sections,journals}=window.ReportData;
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const mapScreen=$('#mapScreen'), reader=$('#reader'), map=$('#map'), detail=$('#detailBody');
+const visited=new Set();let selected='overview',returnFocus=null,world=null,frame=0,previousTime=0,gesture=null,blockedUntil=0;
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');let motion=!reduce.matches;
+const satellites=[['탐구 질문','시스템 설계'],['ROI · 전처리','EMA · 추론'],['서보모터','입력 보정'],['물성 벡터','예측값 저장'],['개발 과정','팀의 기록'],['검증 범위','후속 실험']];
+const themes=sections.map(s=>`--tint:${s.tint};--accent:${s.accent}`);
+const core=`<a href="#overview" class="map-node core" data-body="core" data-topic="overview" style="--tint:#ece2ff;--accent:#ad91db" aria-label="시각에서 촉각으로, 탐구 개요 열기"><span class="node-icon">◈</span><strong class="node-title">시각 → 촉각</strong><span class="node-subtitle">로봇 그리퍼 제어</span><span class="core-label">EXPLORE THE RESEARCH</span></a>`;
+$('#nodes').innerHTML=core+sections.map((s,i)=>`<a href="#${s.id}" class="map-node topic" data-body="${s.id}" data-topic="${s.id}" style="${themes[i]}" aria-label="${s.title} 보고서 열기"><span class="node-icon" aria-hidden="true">${s.icon}</span><strong class="node-title">${s.title}</strong><span class="node-subtitle">${s.en}</span></a>`+satellites[i].map((name,j)=>`<a href="#${s.id}" class="map-node satellite" data-body="${s.id}-${j}" data-topic="${s.id}" style="${themes[i]}" aria-label="${name}: ${s.title} 열기"><span class="node-title">${name}</span></a>`).join('')).join('');
+$('#contentsLinks').innerHTML=sections.map((s,i)=>`<a href="#${s.id}"><span>0${i+1}</span>${s.title}</a>`).join('');
+const nodeElements=new Map($$('.map-node').map(n=>[n.dataset.body,n]));
+let lineElements=[];
+function layout(){
+ const w=map.clientWidth||innerWidth,h=map.clientHeight||innerHeight;
+ const mobile=w<600,short=h<520,large=w>=1100&&h>=650;
+ const r=short?33:mobile?Math.min(43,w*.112):54,cr=short?43:mobile?Math.min(56,w*.145):76;
+ const cx=w*(large?.54:.5),cy=h*(short?.54:.53),rx=mobile?w*.32:Math.min(w*.29,large?370:300),ry=short?h*.23:mobile?h*.255:Math.min(h*.27,265);
+ const angles=mobile?[-135,-45,0,45,135,180]:[-140,-55,5,65,135,190];
+ world=new SpringWorld(w,h);const root=world.add('core',cx,cy,cr,2.6);
+ sections.forEach((s,i)=>{
+  const angle=angles[i]*Math.PI/180,b=world.add(s.id,cx+rx*Math.cos(angle),cy+ry*Math.sin(angle),r,1+.15*(i%3));world.connect(root,b);
+  for(let j=0;j<2;j++){const el=nodeElements.get(`${s.id}-${j}`);el.hidden=!large;
+   if(large){const a=angle+(j===0?-.14:.14),sr=27;const x=Math.max(sr+10,Math.min(w-sr-10,cx+(rx+120)*Math.cos(a))),y=Math.max(90,Math.min(h-105,cy+(ry+105)*Math.sin(a)));const c=world.add(`${s.id}-${j}`,x,y,sr,.65);world.connect(b,c);}
+  }
+ });
+ for(const b of world.bodies){const el=nodeElements.get(b.id);el.style.width=el.style.height=`${b.r*2}px`;}
+ $('#connections').innerHTML=world.links.map(l=>`<line class="${l.b.id.includes('-')?'twig':''}"/>`).join('');lineElements=$$('line',$('#connections'));
+ draw();wake();
 }
-function closeReader(updateURL=true){
- if(reader.open)reader.close();
- document.body.classList.remove('reading');
- if(updateURL)history.replaceState(null,'','#map');
- const target=returnFocus&&returnFocus!==document.body&&returnFocus.isConnected?returnFocus:document.querySelector(`[data-section="${selected}"]`);
- if(target)target.focus({preventScroll:true});
-}
-function go(id){if(location.hash!==`#${id}`)history.pushState(null,'',`#${id}`);render(id);}
-document.querySelector('#closeReader').onclick=()=>closeReader();
-reader.addEventListener('cancel',e=>{e.preventDefault();closeReader();});
-document.addEventListener('click',e=>{
- const n=e.target.closest('[data-section]');if(n)go(n.dataset.section);
- const a=e.target.closest('a[href^="#"]');if(a){const id=a.getAttribute('href').slice(1);
- if(id==='sources'||sections.some(s=>s.id===id)){e.preventDefault();go(id==='sources'?'validation':id);}
- }
+function draw(){if(!world)return;for(const b of world.bodies){nodeElements.get(b.id).style.transform=`translate3d(${(b.x-b.r).toFixed(2)}px,${(b.y-b.r).toFixed(2)}px,0)`;}
+ world.links.forEach((l,i)=>{const el=lineElements[i];el.setAttribute('x1',l.a.x);el.setAttribute('y1',l.a.y);el.setAttribute('x2',l.b.x);el.setAttribute('y2',l.b.y);});}
+function wake(){if(!frame&&motion&&!mapScreen.hidden&&!document.hidden){previousTime=0;frame=requestAnimationFrame(tick);}}
+function tick(t){frame=0;if(!motion||mapScreen.hidden||document.hidden)return;world.step(previousTime?Math.min(.05,(t-previousTime)/1000):1/60);previousTime=t;draw();if(world.energy()>.02||gesture)frame=requestAnimationFrame(tick);}
+function stopMotion(){if(frame)cancelAnimationFrame(frame);frame=0;previousTime=0;}
+function updateMotion(){const b=$('#toggleMotion');b.setAttribute('aria-pressed',String(motion));b.textContent=reduce.matches?'모션 줄임':motion?'모션 켜짐':'모션 꺼짐';b.disabled=reduce.matches;}
+$('#toggleMotion').onclick=()=>{motion=!motion;updateMotion();if(!motion){stopMotion();world.reset();draw();}else wake();};
+const handleReduced=()=>{motion=!reduce.matches;updateMotion();if(!motion){stopMotion();world.reset();draw();}else wake();};
+if(reduce.addEventListener)reduce.addEventListener('change',handleReduced);else if(reduce.addListener)reduce.addListener(handleReduced);
+$('#resetMap').onclick=()=>{world.reset();draw();$('#mapStatus').textContent='노드를 처음 위치로 되돌렸습니다.';wake();};
+map.addEventListener('wheel',e=>{if(e.ctrlKey||!motion)return;e.preventDefault();const unit=e.deltaMode===1?16:e.deltaMode===2?map.clientHeight:1;world.impulse(-Math.max(-150,Math.min(150,e.deltaX*unit))*1.2,-Math.max(-170,Math.min(170,e.deltaY*unit))*2.3);wake();},{passive:false});
+map.addEventListener('pointerdown',e=>{if(!motion||e.button!==0||gesture)return;const a=e.target.closest('[data-body]'),b=a?world.bodies.find(n=>n.id===a.dataset.body):null;gesture={id:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,body:b,moved:false,last:performance.now()};if(b)b.pin={x:b.x,y:b.y};});
+map.addEventListener('pointermove',e=>{
+ if(!gesture||gesture.id!==e.pointerId)return;const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y;
+ if(!g.moved&&Math.hypot(e.clientX-g.startX,e.clientY-g.startY)>8){g.moved=true;map.classList.add('dragging');if(map.setPointerCapture)map.setPointerCapture(e.pointerId);}
+ if(g.moved){e.preventDefault();if(g.body){const b=g.body;b.pin={x:Math.max(b.r+8,Math.min(world.width-b.r-8,b.x+dx)),y:Math.max(b.r+8,Math.min(world.height-b.r-8,b.y+dy))};b.x=b.pin.x;b.y=b.pin.y;draw();}else world.impulse(dx*8,dy*8);wake();}
+ g.x=e.clientX;g.y=e.clientY;g.last=performance.now();
 });
-function syncRoute(){const id=location.hash.slice(1);if(sections.some(s=>s.id===id)||id==='sources')render(id==='sources'?'validation':id);else if(reader.open)closeReader(false);}
-window.addEventListener('popstate',syncRoute);
-document.querySelector('#next').onclick=()=>{const i=sections.findIndex(s=>s.id===selected);if(i===sections.length-1)closeReader();else go(sections[i+1].id);};
-function view(list){document.querySelector('#map').classList.toggle('list',list);document.querySelector('#mapView').setAttribute('aria-pressed',String(!list));document.querySelector('#listView').setAttribute('aria-pressed',String(list));}
-document.querySelector('#mapView').onclick=()=>view(false);document.querySelector('#listView').onclick=()=>view(true);
-function journalHTML(name){return journals[name].map(([date,text])=>`<section><b>${date}</b><p>${text}</p></section>`).join('')}
-function setupJournal(){const el=document.querySelector('#people');el.innerHTML=Object.keys(journals).map((n,i)=>`<button aria-pressed="${i===0}">${n}</button>`).join('');const pick=name=>{el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===name)));document.querySelector('#journal').innerHTML=journalHTML(name)};el.onclick=e=>{if(e.target.matches('button'))pick(e.target.textContent)};pick('정연준')}
-function setupDemo(){document.querySelector('#demoControls').innerHTML=['거칠기','경도','마찰'].map((name,i)=>`<label class="range-row" for="property${i}">${name}<span id="value${i}">0.00</span><input id="property${i}" type="range" min="-1" max="1" step="0.05" value="0"></label>`).join('');const inputs=[...document.querySelectorAll('#demoControls input')];inputs.forEach((el,i)=>el.oninput=()=>document.querySelector(`#value${i}`).textContent=Number(el.value).toFixed(2));document.querySelector('#grasp').onclick=()=>{const snapshot=inputs.map(e=>Number(e.value).toFixed(2));document.querySelector('#demoScene').classList.add('closed');document.querySelector('#demoScene').setAttribute('aria-label','고정 위치로 닫힌 그리퍼의 설명용 모형');document.querySelector('#demoState').textContent=`저장값 [거칠기 ${snapshot[0]}, 경도 ${snapshot[1]}, 마찰 ${snapshot[2]}] · 고정 위치로 닫힘`;document.querySelector('#grasp').disabled=true};document.querySelector('#release').onclick=()=>{document.querySelector('#demoScene').classList.remove('closed');document.querySelector('#demoScene').setAttribute('aria-label','열린 그리퍼의 설명용 모형');document.querySelector('#demoState').textContent='열기 완료 · 저장값 초기화. 입력을 조절하고 다시 잡아보세요.';document.querySelector('#grasp').disabled=false}}
-function buildFull(){document.querySelector('#fullContent').innerHTML=sections.map(s=>{let html=s.html;if(s.id==='activity')html=`<p class="lead">날짜별 활동 기록 요약</p>`+Object.keys(journals).map(n=>`<h4>${n}</h4><div class="timeline">${journalHTML(n)}</div>`).join('');if(s.id==='demo')html=`<p class="lead">웹 체험에서는 세 물성 입력을 조절한 후 잡기 버튼을 누르면 값이 저장됩니다. 이후 입력 변화와 관계없이 고정 위치로 닫힙니다. 이는 설명용 모형이며 실제 AI 추론·하드웨어 제어·힘 측정 결과가 아닙니다.</p>`;return `<article><span class="tag">${s.tag}</span><h3>${s.heading}</h3>${html}</article>`}).join('')}
-buildFull();document.querySelector('#readAll').onclick=()=>{document.querySelector('#fullReport').hidden=false;document.querySelector('#fullReport').scrollIntoView()};document.querySelector('#closeReport').onclick=()=>document.querySelector('#fullReport').hidden=true;document.querySelector('#print').onclick=()=>window.print();syncRoute();
+function releasePointer(e){if(!gesture||gesture.id!==e.pointerId)return;const g=gesture;if(g.body)g.body.pin=null;if(g.moved){blockedUntil=performance.now()+450;if(map.hasPointerCapture&&map.hasPointerCapture(e.pointerId))map.releasePointerCapture(e.pointerId);}gesture=null;map.classList.remove('dragging');wake();}
+map.addEventListener('pointerup',releasePointer);map.addEventListener('pointercancel',releasePointer);map.addEventListener('lostpointercapture',e=>{if(e.target===map)releasePointer(e);});
+// A drag never becomes a navigation click. A tap and a keyboard activation always can.
+map.addEventListener('click',e=>{if(e.detail!==0&&performance.now()<blockedUntil){e.preventDefault();e.stopPropagation();}else{const a=e.target.closest('a[data-topic]');if(a){e.preventDefault();navigate(a.dataset.topic,a);}}});
+window.addEventListener('resize',()=>{gesture=null;layout();});document.addEventListener('visibilitychange',()=>document.hidden?stopMotion():wake());
+$('#openContents').onclick=()=>{const open=$('#contents').hidden;$('#contents').hidden=!open;$('#openContents').setAttribute('aria-expanded',String(open));};
+function closeContents(){$('#contents').hidden=true;$('#openContents').setAttribute('aria-expanded','false');}
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(a&&!a.closest('#map')&&!e.defaultPrevented){e.preventDefault();navigate(a.getAttribute('href').slice(1),a);}});
+function navigate(id,trigger){if(trigger&&!mapScreen.hidden)returnFocus=trigger;const target=id==='sources'?'validation':id;if(location.hash!==`#${target}`)history.pushState({topic:target},'',`#${target}`);showRoute(target);}
+function showRoute(id){closeContents();if(id==='map'||!id){showMap();return;}if(id==='all'){showReader('all');return;}if(!sections.some(s=>s.id===id)){showMap();return;}showReader(id);}
+function showMap(){reader.hidden=true;mapScreen.hidden=false;mapScreen.inert=false;reader.inert=true;const target=returnFocus&&returnFocus.isConnected?returnFocus:nodeElements.get(selected)||nodeElements.get('core');if(target)target.focus({preventScroll:true});wake();}
+function closeArticle(){history.replaceState(null,'','#map');showMap();}
+function showReader(id){
+ stopMotion();if(gesture){if(gesture.body)gesture.body.pin=null;gesture=null;}map.classList.remove('dragging');
+ selected=id;mapScreen.hidden=true;mapScreen.inert=true;reader.hidden=false;reader.inert=false;
+ if(id==='all')renderAll();else{
+  const s=sections.find(s=>s.id===id),i=sections.indexOf(s);visited.add(id);
+  detail.innerHTML=`<div class="section-kicker">${s.tag}</div><p class="reader-category">${s.title}</p><h2 class="article-title">${s.heading.replace(/<br>/g,' ')}</h2>${articleBody(s)}`;
+  $('#readerTitle').textContent=s.title;$('#readerProgress').style.width=`${(i+1)/6*100}%`;$('#pageNumber').textContent=`0${i+1} / 06`;
+  $('#previous').textContent=i===0?'← 마인드맵':'← 이전 탐구';$('#next').textContent=i===5?'마인드맵으로 →':'다음 탐구 →';
+  initVisual(id);
+ }
+ $('#readCount').textContent=`${visited.size} / 6 탐구`;
+ $$('.map-node').forEach(n=>n.setAttribute('aria-current',String(n.dataset.topic===id)));
+ reader.scrollTop=0;$('#detail').focus({preventScroll:true});
+}
+$('#closeReader').onclick=closeArticle;
+$('#previous').onclick=()=>{const i=sections.findIndex(s=>s.id===selected);if(i<=0)closeArticle();else navigate(sections[i-1].id);};
+$('#next').onclick=()=>{const i=sections.findIndex(s=>s.id===selected);if(i<0||i===5)closeArticle();else navigate(sections[i+1].id);};
+$('#readAll').onclick=()=>navigate('all');
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!reader.hidden)closeArticle();else closeContents();}});
+window.addEventListener('popstate',()=>showRoute(location.hash.slice(1)));window.addEventListener('hashchange',()=>showRoute(location.hash.slice(1)));
+const figure=(title,badge,body,caption)=>`<figure class="visual"><div class="visual-head"><h3>${title}</h3><span class="badge">${badge}</span></div>${body}<figcaption class="figure-caption">${caption}</figcaption></figure>`;
+const chartGrid=(ylow='−1',yhigh='+1',ylabel='정규화 값',xlabel='샘플 순서')=>`<line class="grid-line" x1="45" x2="575" y1="30" y2="30"/><line class="grid-line" x1="45" x2="575" y1="110" y2="110"/><line class="grid-line" x1="45" x2="575" y1="190" y2="190"/><text class="axis-label" x="10" y="34">${yhigh}</text><text class="axis-label" x="10" y="194">${ylow}</text><text class="axis-label" x="45" y="16">${ylabel}</text><text class="axis-label" x="475" y="220">${xlabel}</text>`;
+function graphPath(values,min=-1,max=1){return values.map((v,i)=>`${i?'L':'M'}${(45+i/(values.length-1)*530).toFixed(2)},${(190-(v-min)/(max-min)*160).toFixed(2)}`).join(' ');}
+const visualHTML={
+ overview:()=>figure('이미지 한 장이 동작이 되기까지','단계를 눌러 탐색',`<div class="pipeline" id="pipeline">${[['▧','카메라','영상 · 관심 영역'],['◉','물성 예측','거칠기 · 경도 · 마찰'],['▣','값 저장','잡기 버튼 시점'],['⋈','그리퍼','두 서보의 움직임']].map((x,i)=>`<button data-step="${i}" aria-pressed="${i===0}"><b>${x[0]}</b>${x[1]}<small class="step-sub">${x[2]}</small></button>`).join('')}</div><div class="pipeline-description" id="pipelineInfo" role="status"></div>`,'활동 기록에 근거한 시스템 관계도입니다. 영상에서 예측하는 과정과 실제 힘을 측정하는 과정은 다릅니다.'),
+ vision:()=>figure('예측값의 흔들림을 줄이는 방법','설명용 합성 신호',`<div class="chart-legend"><span style="--key:#dfcfee">원래 입력</span><span style="--key:#a67ac5">EMA 적용</span></div><svg viewBox="0 0 600 235" role="img" aria-label="합성 입력과 지수이동평균 출력을 비교하는 선 그래프"><title>EMA 비교 그래프: 실제 모델의 측정 데이터가 아닙니다</title>${chartGrid()}<path id="rawLine" class="chart-line" stroke="#dfcfee" stroke-width="2"/><path id="emaLine" class="chart-line" stroke="#a67ac5" stroke-width="3"/></svg><label class="range-label" for="alpha">새 예측값을 반영하는 비율 α <output id="alphaValue" for="alpha">0.25</output><input id="alpha" type="range" min="0.05" max="1" step="0.05" value="0.25"></label><div class="formula">평활값 = α × 현재 입력 + (1 − α) × 이전 평활값</div><p id="emaSummary" class="figure-caption"></p>`,'슬라이더로 흔들림과 반응 속도의 차이를 확인해 보세요. α가 작으면 변화가 부드러워지지만 입력을 늦게 따라갑니다. 실제 사용한 α와 예측 성능은 확인되지 않았습니다.'),
+ control:()=>figure('같은 시간, 부드럽게 닫히는 두 손가락','설명용 궤적',`<div class="split-visual"><div><svg viewBox="0 0 600 235" role="img" aria-label="시간에 따른 선형 이동과 가감속 이동의 정규화 진행률 비교">${chartGrid('0','1','이동 진행률','시간 (정규화)')}<path class="chart-line" d="M45 190 L575 30" stroke="#decfeb" stroke-width="2"/><path id="smoothLine" class="chart-line" stroke="#ae88c8" stroke-width="3"/><circle id="curvePoint" r="7" fill="#ae88c8"/><line id="curveGuide" y1="30" y2="190" stroke="#c9b3da" stroke-dasharray="4 4"/></svg><div class="chart-legend"><span style="--key:#decfeb">선형 이동</span><span style="--key:#ae88c8">가감속 예시</span></div></div><div><div id="trajectoryGripper" class="gripper-scene" role="img" aria-label="공통 진행률로 움직이는 그리퍼 모형"><div class="gripper-rail"></div><div class="finger left" style="transition:none"></div><div class="finger right" style="transition:none"></div><div class="gripper-object"></div></div><div class="readout"><div><b id="progressA">0%</b><small>서보 A 진행률</small></div><div><b id="progressB">0%</b><small>서보 B 진행률</small></div></div></div></div><label class="range-label" for="trajectory">동작 시간 <output id="trajectoryValue">0%</output><input id="trajectory" type="range" min="0" max="100" value="0"></label><div class="formula">설명용 진행률 s(t) = 3t² − 2t³, 0 ≤ t ≤ 1</div>`,'두 서보의 실제 회전 방향과 각도는 별도 보정이 필요합니다. 그래프는 공통 진행률과 가감속의 개념을 설명하며, 원본 로봇의 궤적이나 파지력을 재현하지 않습니다.'),
+ demo:()=>figure('바뀌는 예측값, 저장되는 한 순간','직접 조절하는 설명용 모형',`<div class="material-presets" aria-label="설명용 입력 프리셋"><button data-preset="-0.6,-0.7,0.5">가상 입력 A</button><button data-preset="0.4,0.8,-0.6">가상 입력 B</button><button data-preset="0,0,0">중앙값</button></div><div class="split-visual"><div>${['거칠기','경도','마찰'].map((n,i)=>`<label class="range-label" for="property${i}">${n}<output id="value${i}">0.00</output><input id="property${i}" type="range" min="-1" max="1" step="0.05" value="0"></label>`).join('')}<div class="demo-buttons"><button id="grasp" class="primary">잡기 · 현재 값 저장</button><button id="release">열기 / 초기화</button></div><div id="demoState" class="demo-state" role="status">입력 대기 · 아직 저장된 값이 없습니다.</div></div><div><svg class="radar" viewBox="0 0 300 260" role="img" aria-label="현재 물성 입력과 잡기 순간 저장값의 레이더 차트"><title>−1은 중심, +1은 가장자리인 설명용 물성 차트</title><g id="radarGrid"></g><polygon id="snapshotPolygon" fill="#e0b9be24" stroke="#c69da9" stroke-width="2" stroke-dasharray="5 4"/><polygon id="livePolygon" fill="#bfa0dc45" stroke="#b292d0" stroke-width="2"/><text x="150" y="21" text-anchor="middle" class="axis-label">거칠기</text><text x="260" y="225" text-anchor="middle" class="axis-label">경도</text><text x="40" y="225" text-anchor="middle" class="axis-label">마찰</text></svg><div class="chart-legend"><span style="--key:#b292d0">현재 입력</span><span class="dashed">잡기 시 저장값</span></div></div></div><div id="demoScene" class="gripper-scene" role="img" aria-label="열린 그리퍼 모형"><div class="gripper-rail"></div><div class="finger left"></div><div class="finger right"></div><div class="gripper-object"></div></div>`,'잡기 후에도 슬라이더를 움직여 보세요. 현재 입력은 변하지만 저장된 값과 진행 중인 고정 위치 동작은 유지됩니다. 실제 AI 추론·로봇 연결·물성별 힘 계산은 수행하지 않습니다.'),
+ activity:()=>figure('다섯 번의 활동, 세 사람의 시선','날짜를 선택하세요',`<div class="journal-path" id="journalPath">${[['08.19','주제 선정'],['09.09','환경 구성'],['09.23','예측 · 제작'],['10.14','제어 · 개선'],['10.28','통합 · 점검']].map((x,i)=>`<button data-date="${i}" aria-pressed="${i===0}">${x[0]}<small>${x[1]}</small></button>`).join('')}</div><div id="journalEntries" class="journal-entries"></div>`,'각 날짜에 작성된 활동을 요약했습니다. 짧은 미완성 기록은 추측해 채우지 않았으며, 활동자가 기록한 내용과 검증된 수치를 구분했습니다.'),
+ validation:()=>figure('구현에서 검증으로 이어지는 다음 단계','연구 범위 구분',`<div class="evidence-flow"><div class="evidence-column"><span class="state-label">활동 기록으로 확인</span><h4>시스템 구현</h4><p>영상에서 물성 출력</p><p>버튼 보정 · 예측값 저장</p><p>두 서보의 파지 동작</p></div><div class="evidence-arrow">→</div><div class="evidence-column"><span class="state-label">추가 실험 필요</span><h4>성능 검증</h4><p>물성 예측 오차</p><p>실제 힘(N) · 미끄러짐</p><p>재질별 반복 파지 성공률</p></div></div>`,'실험 데이터가 없는 항목에는 임의의 성공률이나 정확도 그래프를 넣지 않았습니다. 실제 힘 측정과 반복 실험이 확보되면 결과 비교 그래프로 확장할 수 있습니다.')
+};
+function articleBody(s){
+ if(s.id==='demo')return `<p class="lead">물성 벡터를 직접 바꾸고, 잡기 순간의 값을 저장해 보세요. 변화하는 입력과 고정된 동작의 관계를 눈으로 확인할 수 있습니다.</p>${visualHTML.demo()}<section class="prose-section"><h4>왜 물성이 달라도 닫힘 위치는 같을까요?</h4><p>최신 활동 기록은 ‘예측값 저장과 고정 각도 제어’를 구분합니다. 물성 예측값을 실제 힘으로 환산할 실험적 근거가 부족하므로, 이 체험도 임의의 힘 계산식을 사용하지 않습니다. 프리셋은 특정 재질의 측정값이 아닌 가상 입력입니다.</p></section>`;
+ if(s.id==='activity')return `<p class="lead">처음의 구상에서 하드웨어 제작, 실시간 추론과 제어 개선까지. 날짜를 눌러 세 사람이 남긴 기록을 함께 읽어보세요.</p>${visualHTML.activity()}<p class="source-note">근거 · 2학기활동내용 D5:H5(정연준), D6:H6(강준혁), D8:H8(권준현).</p>`;
+ const html=s.html,first=html.indexOf('</p>')+4;return html.slice(0,first)+visualHTML[s.id]()+html.slice(first);
+}
+const stepTexts=[
+ '카메라 영상을 읽고 물체를 담은 관심 영역(ROI)을 다룹니다. 기록에는 224 × 224 전처리와 ROI 축소, 영상 재연결 점검이 포함되어 있습니다.',
+ 'PyTorch 기반 모델이 거칠기·경도·마찰의 세 성분을 예측합니다. 정규화 출력은 이미지에서 얻은 추정치이며, 물리적인 마찰계수나 힘(N) 자체가 아닙니다.',
+ '잡기 버튼을 누르는 순간의 최신 예측값을 따로 저장합니다. 이후 영상에서 다른 값이 나오더라도 진행 중인 동작의 기준이 계속 바뀌지 않도록 합니다.',
+ '두 서보를 이용해 양쪽 손가락을 움직입니다. 최신 기록에서는 예측값 저장과 고정 각도 제어를 구분하며, 실제 파지력 검증은 후속 과제로 남아 있습니다.'
+];
+function initVisual(id){
+ if(id==='overview'){const update=i=>{$$('#pipeline button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.step===i)));$('#pipelineInfo').textContent=stepTexts[i];};$('#pipeline').onclick=e=>{const b=e.target.closest('[data-step]');if(b)update(+b.dataset.step);};update(0);}
+ if(id==='vision'){
+  const raw=Array.from({length:60},(_,i)=>Math.max(-.95,Math.min(.95,(i<20?-.45:i<40?.55:-.15)+.2*Math.sin(i*2.3)+.1*Math.cos(i*1.7))));
+  $('#rawLine').setAttribute('d',graphPath(raw));const update=()=>{const a=+$('#alpha').value;let previous=raw[0];const smoothed=raw.map((x,i)=>previous=i?a*x+(1-a)*previous:x);$('#emaLine').setAttribute('d',graphPath(smoothed));$('#alphaValue').textContent=a.toFixed(2);$('#emaSummary').textContent=a===1?'α = 1: 원래 입력을 그대로 따라가며 두 선이 겹칩니다.':`현재 α = ${a.toFixed(2)}. 새 입력 ${Math.round(a*100)}%, 이전 평활값 ${Math.round((1-a)*100)}%를 반영합니다.`;};$('#alpha').oninput=update;update();
+ }
+ if(id==='control'){
+  const smooth=t=>t*t*(3-2*t);$('#smoothLine').setAttribute('d',graphPath(Array.from({length:51},(_,i)=>smooth(i/50)),0,1));
+  const update=()=>{const t=+$('#trajectory').value/100,s=smooth(t);$('#trajectoryValue').textContent=`${Math.round(t*100)}%`;$('#progressA').textContent=$('#progressB').textContent=`${Math.round(s*100)}%`;$('#curvePoint').setAttribute('cx',45+t*530);$('#curvePoint').setAttribute('cy',190-s*160);$('#curveGuide').setAttribute('x1',45+t*530);$('#curveGuide').setAttribute('x2',45+t*530);$('#trajectoryGripper .left').style.transform=`translateX(${s*42}px)`;$('#trajectoryGripper .right').style.transform=`translateX(${-s*42}px)`;};$('#trajectory').oninput=update;update();
+ }
+ if(id==='demo')initDemo();
+ if(id==='activity'){
+  const update=i=>{$$('#journalPath button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.date===i)));$('#journalEntries').innerHTML=Object.entries(journals).map(([name,rows])=>{let entry=rows[i];if(name==='강준혁')entry=rows[i<2?i:i===4?3:2];return `<section class="journal-entry"><h4>${name} · ${entry[0]}</h4><p>${entry[1]}</p></section>`;}).join('');};$('#journalPath').onclick=e=>{const b=e.target.closest('[data-date]');if(b)update(+b.dataset.date);};update(0);
+ }
+}
+function initDemo(){
+ const inputs=$$('.range-label input',detail),center=[150,140],directions=[-90,30,150];let snapshot=null;
+ const points=values=>values.map((v,i)=>{const r=(v+1)/2*98,a=directions[i]*Math.PI/180;return `${center[0]+r*Math.cos(a)},${center[1]+r*Math.sin(a)}`;}).join(' ');
+ $('#radarGrid').innerHTML=[-.5,0,.5,1].map(v=>`<polygon points="${points([v,v,v])}" fill="none" stroke="#e4d9ef"/>`).join('')+directions.map(a=>`<line x1="150" y1="140" x2="${150+98*Math.cos(a*Math.PI/180)}" y2="${140+98*Math.sin(a*Math.PI/180)}" stroke="#e4d9ef"/>`).join('');
+ const update=()=>{const v=inputs.map((e,i)=>{const n=+e.value;$('#value'+i).textContent=n.toFixed(2);return n;});$('#livePolygon').setAttribute('points',points(v));if(snapshot)$('#snapshotPolygon').setAttribute('points',points(snapshot));else $('#snapshotPolygon').removeAttribute('points');};
+ inputs.forEach(e=>e.oninput=update);
+ $$('.material-presets button').forEach(b=>b.onclick=()=>{b.dataset.preset.split(',').forEach((v,i)=>inputs[i].value=v);update();});
+ $('#grasp').onclick=()=>{snapshot=inputs.map(e=>+e.value);$('#demoState').textContent=`저장 완료 · 거칠기 ${snapshot[0].toFixed(2)} / 경도 ${snapshot[1].toFixed(2)} / 마찰 ${snapshot[2].toFixed(2)}. 슬라이더를 움직여도 이 값은 유지됩니다.`;$('#demoScene').classList.add('closed');$('#demoScene').setAttribute('aria-label','고정 위치로 닫힌 그리퍼 모형');$('#grasp').disabled=true;update();};
+ $('#release').onclick=()=>{snapshot=null;$('#demoScene').classList.remove('closed');$('#demoScene').setAttribute('aria-label','열린 그리퍼 모형');$('#grasp').disabled=false;$('#demoState').textContent='열기 완료 · 저장값을 초기화했습니다. 다시 잡아보세요.';update();};update();
+}
+function renderAll(){
+ $('#readerTitle').textContent='전체 보고서';$('#readerProgress').style.width='100%';$('#pageNumber').textContent='전체 읽기';$('#previous').textContent='← 마인드맵';$('#next').textContent='마인드맵으로 →';
+ detail.innerHTML=`<div class="section-kicker">FULL RESEARCH REPORT</div><h2 class="article-title">시각 기반 촉각 예측을 통한<br>로봇 그리퍼 제어</h2><p class="lead">각 카테고리의 시각 자료와 체험은 아래 바로가기로 열 수 있습니다.</p><nav class="reader-chapters">${sections.map(s=>`<a href="#${s.id}">${s.title} ↗</a>`).join('')}</nav><div class="figure-actions"><button id="printReport">인쇄 / PDF 저장</button></div>`+sections.map(s=>{
+ let html=s.html;if(s.id==='demo')html='<p>설명용 체험에서는 세 물성 입력을 조절하고 잡기 시점의 값을 저장합니다. 이후 입력 변화와 관계없이 고정된 위치로 닫힙니다. 실제 AI 추론·하드웨어 제어·힘 측정 결과가 아닙니다.</p>';
+ if(s.id==='activity')html=Object.entries(journals).map(([n,rows])=>`<h4>${n}</h4>`+rows.map(([d,t])=>`<p><strong>${d}</strong> · ${t}</p>`).join('')).join('');
+ return `<section class="full-section"><h3>${s.title}</h3>${html}</section>`;}).join('');$('#printReport').onclick=()=>window.print();
+}
+layout();updateMotion();reader.inert=true;showRoute(location.hash.slice(1));
+})();

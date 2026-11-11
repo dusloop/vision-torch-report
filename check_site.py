@@ -14,7 +14,7 @@ class Page(HTMLParser):
         for key in ('href', 'src'):
             val = a.get(key, '')
             if val.startswith('./'):
-                assert (root / val).is_file(), f'Missing asset: {val}'
+                assert (root / val.split('?', 1)[0]).is_file(), f'Missing asset: {val}'
 p = Page()
 p.feed((root / 'index.html').read_text())
 css = (root / 'style.css').read_text()
