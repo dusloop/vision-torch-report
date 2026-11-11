@@ -40,14 +40,13 @@
 
 ## GitHub Pages 게시
 
-1. 새 공개 레포지토리 루트에 파일을 올립니다. `.github/workflows/pages.yml`도 포함합니다.
-2. 레포지토리 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 설정합니다.
-3. 기본 브랜치 `main` 또는 `master`에 푸시하면 워크플로가 실행됩니다. 이미 파일을 올렸다면 **Actions → Deploy report to GitHub Pages → Run workflow**를 실행합니다.
-4. 실행이 성공하면 Actions의 `github-pages` 환경 또는 Settings → Pages에 표시되는 URL을 사용합니다.
+보고서 소스는 `dusloop/vision-torch-report`의 `main` 브랜치에 업로드했습니다.
 
-워크플로 쓰기 권한이 없는 경우, HTML·CSS·JS와 `.nojekyll`을 올리고 Pages의 Source를 **Deploy from a branch**, 브랜치를 `main`, 폴더를 `/ (root)`로 지정해도 됩니다.
+1. 레포지토리 **Settings → Pages → Build and deployment → Source**에서 **Deploy from a branch**를 선택합니다.
+2. 브랜치를 `main`, 폴더를 `/ (root)`로 지정하고 **Save**를 누릅니다.
+3. 배포 후 Settings → Pages에 표시되는 주소로 접속합니다.
 
-아직 실제 GitHub 업로드 또는 공개 배포가 확인된 상태는 아닙니다. URL을 임의로 배포 완료로 표시하지 않습니다.
+정적 사이트이므로 별도의 빌드 워크플로가 필요 없습니다. 현재 Pages 활성화와 실제 공개 URL 응답은 확인하지 못했습니다.
 
 ## 검증
 
