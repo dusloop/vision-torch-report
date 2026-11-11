@@ -47,7 +47,6 @@
    const api={set(next,immediate=false){cancel();target=next.slice();if(immediate||!motion()){finish();return;}start=value.slice();started=null;frame=requestAnimationFrame(step);},finish,get:()=>value.slice()};
    animations.add(api);cleanups.push(cancel);render(value);return api;
   }
-  on(document,'vt:motion-change',()=>{if(!motion())animations.forEach(a=>a.finish());});
   function numericKeys(el,input,update){
    on(el,'keydown',e=>{
     const min=+input.min,max=+input.max,step=+input.step||1;
@@ -59,7 +58,7 @@
   function viewport(element,label){
    const shell=document.createElement('div');shell.className='diagram-shell';
    const toolbar=document.createElement('div');toolbar.className='diagram-toolbar';
-   toolbar.innerHTML=`<span>잡고 이동 · ± 확대/축소</span><div><button type="button" data-view="out" aria-label="${label} 축소">−</button><output aria-label="확대 비율">100%</output><button type="button" data-view="in" aria-label="${label} 확대">＋</button><button type="button" data-view="reset" aria-label="${label} 원래 위치와 크기로">↺</button></div>`;
+   toolbar.innerHTML=`<div><button type="button" data-view="out" aria-label="${label} 축소" title="축소">−</button><output aria-label="확대 비율">100%</output><button type="button" data-view="in" aria-label="${label} 확대" title="확대">＋</button><button type="button" data-view="reset" aria-label="${label} 초기화" title="초기화">↺</button></div>`;
    const viewport=document.createElement('div');viewport.className='diagram-viewport';viewport.tabIndex=0;viewport.setAttribute('role','group');viewport.setAttribute('aria-label',`${label}. 빈 곳을 잡아 이동, 더하기와 빼기로 확대·축소. Home 키로 초기화.`);
    const scene=document.createElement('div');scene.className='diagram-scene';
    element.before(shell);shell.append(toolbar,viewport);viewport.append(scene);scene.append(element);
@@ -92,7 +91,6 @@
     else if(e.key==='-'){e.preventDefault();shift(0,0,state[2]-.25);}
     else if(e.key==='Home'){e.preventDefault();stop();ease.set([0,0,1]);}
    });
-   on(document,'vt:motion-change',()=>{if(!motion())stop();});
    cleanups.push(stop);return shell;
   }
   return {on,drag,tween,numericKeys,viewport,dispose(){if(disposed)return;disposed=true;cleanups.reverse().forEach(f=>f());animations.clear();}};

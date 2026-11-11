@@ -4,8 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8f7fc">
 <meta name="description" content="이미지 기반 촉각 물성 예측과 로봇 그리퍼 제어. 움직이는 탐구 지도와 인터랙티브 연구 보고서.">
 <title>Vision → Touch | 시각에서 촉각으로</title>
-<link rel="stylesheet" href="./style.css?v=20261111-5">
-<script defer src="./content.js?v=20261111-5"></script><script defer src="./physics.js?v=20261111-5"></script><script defer src="./layout.js?v=20261111-5"></script><script defer src="./interactions.js?v=20261111-5"></script><script defer src="./report.js?v=20261111-5"></script>
+<link rel="stylesheet" href="./style.css?v=20261111-6">
+<script defer src="./content.js?v=20261111-6"></script><script defer src="./physics.js?v=20261111-6"></script><script defer src="./layout.js?v=20261111-6"></script><script defer src="./interactions.js?v=20261111-6"></script><script defer src="./report.js?v=20261111-6"></script>
 </head>
 <body>
 <main id="mapScreen" aria-label="전체 화면 탐구 지도">
@@ -13,19 +13,17 @@
 <div class="map-orbits" aria-hidden="true"></div><svg id="connections" class="connections" aria-hidden="true"></svg>
 <div id="nodes"></div>
 </div>
-<header class="map-header"><a class="brand" href="#map"><span class="brand-mark">◈</span><span>VISION <i>→</i> TOUCH<small>INTERACTIVE RESEARCH ATLAS</small></span></a><div class="header-tools"><span class="semester">2026 · 2학기 진로 프로젝트</span><button id="openContents" class="icon-button" aria-expanded="false" aria-controls="contents">☰ <span>목차</span></button></div></header>
+<header class="map-header"><a class="brand" href="#map"><span class="brand-mark">◈</span><span>VISION <i>→</i> TOUCH<small>INTERACTIVE RESEARCH ATLAS</small></span></a><div class="header-tools"><span class="semester">2026 2학기</span><button id="openContents" class="icon-button" aria-expanded="false" aria-controls="contents">☰ <span>목차</span></button></div></header>
 <div class="map-intro"><p class="eyebrow">ROBOTICS × DEEP LEARNING</p><h1>보는 것에서,<br><em>느끼는 것으로.</em></h1><p>시각 기반 촉각 예측을 통한 로봇 그리퍼 제어</p></div>
-<aside id="contents" class="contents" aria-label="보고서 목차" hidden><h2>탐구 바로가기</h2><nav id="contentsLinks"></nav><button id="readAll">전체 보고서 읽기 ↗</button></aside>
-<div class="map-counter"><span class="status-dot"></span><span id="readCount">0 / 6 탐구</span></div>
-<footer class="map-footer"><div class="map-controls"><button id="resetMap" title="지도 위치와 배치를 화면 크기에 맞추기">↺ <span>화면에 맞추기</span></button><button id="toggleMotion" aria-pressed="true">모션 켜짐</button></div>
-<div class="map-instruction"><span class="instruction-icon">↕</span><span><span class="desktop-help">마우스 왼쪽 버튼으로 잡고 움직이세요</span><span class="touch-help">손가락으로 잡고 움직이세요</span><small>빈 곳: 지도 이동 · 노드: 당기기 / 클릭해서 읽기</small></span></div>
-<div class="map-credit">정연준 · 강준혁 · 권준현<span>VISION → PREDICTION → ACTION</span></div>
-</footer><div id="mapStatus" class="sr-only" role="status"></div>
+<aside id="contents" class="contents" aria-label="보고서 목차" hidden><h2>목차</h2><nav id="contentsLinks"></nav><button id="readAll">보고서</button></aside>
+<div class="map-counter"><span class="status-dot"></span><span id="readCount">0/6</span></div>
+<footer class="map-footer"><div class="map-credit">정연준, 강준혁, 권준현<span>VISION → PREDICTION → ACTION</span></div>
+</footer>
 </main>
 <section id="reader" class="reader-screen" aria-labelledby="readerTitle" hidden>
-<header class="reader-bar"><div class="reader-tools"><a class="reader-home" href="#map" aria-label="마인드맵으로 돌아가기">◈ <span>탐구 지도</span></a><button id="readerMotion" class="reader-motion" aria-pressed="true">모션 켜짐</button></div><div class="reader-heading"><small>시각에서 촉각으로</small><span id="readerTitle"></span></div><button id="closeReader" class="close-button" aria-label="본문 닫고 마인드맵으로 돌아가기" title="닫기 (Esc)">×</button></header>
+<header class="reader-bar"><div class="reader-tools"><a class="reader-home" href="#map" aria-label="마인드맵으로 돌아가기">◈ <span>지도</span></a></div><div class="reader-heading"><small>시각에서 촉각으로</small><span id="readerTitle"></span></div><button id="closeReader" class="close-button" aria-label="닫기" title="닫기">×</button></header>
 <div class="reader-progress" aria-hidden="true"><span id="readerProgress"></span></div>
-<article id="detail" class="detail" tabindex="-1"><div id="detailBody"></div><footer class="reader-footer"><button id="previous">← 이전 탐구</button><span id="pageNumber"></span><button id="next">다음 탐구 →</button></footer></article>
+<article id="detail" class="detail" tabindex="-1"><div id="detailBody"></div><footer class="reader-footer"><button id="previous">이전</button><span id="pageNumber"></span><button id="next">다음</button></footer></article>
 </section>
 <noscript><div class="no-script">이 인터랙티브 보고서에는 JavaScript가 필요합니다. <a href="https://github.com/dusloop/vision-torch-report#readme">보고서 요약 읽기</a></div></noscript>
 </body></html>

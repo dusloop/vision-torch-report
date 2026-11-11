@@ -47,8 +47,9 @@ for(const pointer of ['mouse','touch','pen']){
  assert.equal(a.errors.length,0,a.errors.map(String).join('\n'));a.dom.window.close();
 }
 assert.deepEqual(neighbors[0],neighbors[1],'mouse and touch use the same physics');assert.deepEqual(neighbors[1],neighbors[2],'pen uses the same physics');
-// Respect reduced motion by default, but allow a deliberate user opt-in on desktop.
-const reduced=create({reduced:true});assert.equal(reduced.$('#toggleMotion').getAttribute('aria-pressed'),'false');
-reduced.click('#toggleMotion');assert.equal(reduced.$('#toggleMotion').getAttribute('aria-pressed'),'true');assert.equal(reduced.w.localStorage.getItem('vt-motion'),'on');
-reduced.click('.topic[data-topic="vision"]');reduced.click('#readerMotion');assert.equal(reduced.$('#readerMotion').getAttribute('aria-pressed'),'false');reduced.input('#alpha','1');assert.equal(reduced.$('#emaLine').getAttribute('d'),reduced.$('#rawLine').getAttribute('d'),'reduced/no motion renders immediately');assert.equal(reduced.errors.length,0);reduced.dom.window.close();
-console.log('PASS input parity: mouse/touch/pen coupling, diagram pan/inertia/zoom/reset, graph and gripper dragging, radar dragging/snapshot, keyboard, scaled coordinates, cleanup, reduced-motion opt-in');
+// Motion is enabled without a switch, regardless of obsolete saved settings.
+const reduced=create({reduced:true,storedMotion:'off'});assert.equal(reduced.d.documentElement.dataset.motion,'on');
+for(const id of ['toggleMotion','readerMotion','resetMap'])assert.equal(reduced.$('#'+id),null);
+const core=reduced.$('.core'),before=xy(core);reduced.$('#map').dispatchEvent(new reduced.w.WheelEvent('wheel',{deltaY:100,bubbles:true,cancelable:true}));reduced.step(5);assert.notDeepEqual(xy(core),before,'motion runs with no opt-in');
+reduced.click('.topic[data-topic="vision"]');reduced.input('#alpha','1');reduced.step(20);assert.equal(reduced.$('#emaLine').getAttribute('d'),reduced.$('#rawLine').getAttribute('d'));assert.equal(reduced.errors.length,0);reduced.dom.window.close();
+console.log('PASS input parity: mouse/touch/pen coupling, diagram pan/inertia/zoom/reset, graph and gripper dragging, radar dragging/snapshot, keyboard, scaled coordinates, cleanup, always-on motion');
